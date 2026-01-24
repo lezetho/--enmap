@@ -236,6 +236,7 @@ export default class Enmap<V = any, SV = unknown> {
    */
   get(key: string): V | null;
   get<P extends Path<V>>(key: string, path: P): PathValue<V, P> | null;
+  get<P extends Path<V>>(key: string, path: P | undefined): V | PathValue<V, P> | null;
   get<P extends Path<V>>(key: string, path?: P): V | PathValue<V, P> | null {
     this.#keycheck(key);
 
