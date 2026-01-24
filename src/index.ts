@@ -23,8 +23,6 @@ const pkgdata = JSON.parse(readFileSync('./package.json', 'utf8'));
 
 import Database from 'better-sqlite3';
 
-const NAME_REGEX = /^([\w-]+)$/;
-
 // Type definitions
 export interface EnmapOptions<V = unknown, SV = unknown> {
   name?: string;
@@ -60,20 +58,17 @@ type MathOps =
   | 'random';
 
 // Path type helpers for nested object access
-type Path<T, Key extends keyof T = keyof T> = Key extends string
-  ? T[Key] extends Record<string, any>
-    ?
-        | `${Key}.${Path<T[Key], Exclude<keyof T[Key], keyof any[]>> & string}`
-        | `${Key}.${Exclude<keyof T[Key], keyof any[]> & string}`
-        | Key
-    : Key
+type PathImpl<T, K extends keyof T> = K extends string
+  ? NonNullable<T[K]> extends Record<string, unknown>
+    ? K | `${K}.${PathImpl<NonNullable<T[K]>, keyof NonNullable<T[K]>>}`
+    : K
   : never;
+
+type Path<T> = PathImpl<T, keyof T>;
 
 type PathValue<T, P extends string> = P extends `${infer K}.${infer Rest}`
   ? K extends keyof T
-    ? T[K] extends Record<string, any>
-      ? PathValue<T[K], Rest>
-      : never
+    ? PathValue<NonNullable<T[K]>, Rest>
     : never
   : P extends keyof T
     ? T[P]
